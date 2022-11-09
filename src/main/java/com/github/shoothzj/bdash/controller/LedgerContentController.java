@@ -55,13 +55,16 @@ public class LedgerContentController {
     @GetMapping("/ledgers/{ledger}/entries")
     public List<GetLedgerEntryResp> getLedgerEntryList(
             @PathVariable long ledger,
-            @RequestParam(value = "codec", required = false) String codec) throws BKException, InterruptedException {
+            @RequestParam(value = "decodeComponent", required = false)
+            String component,
+            @RequestParam(value = "decodeNamespace", required = false)
+            String namespace) throws Exception {
         try (LedgerHandle ledgerHandle = bookKeeper.openLedger(ledger, config.digestType, config.getPassword())) {
             Enumeration<LedgerEntry> readEntries = ledgerHandle.readEntries(0, ledgerHandle.getLastAddConfirmed());
             List<GetLedgerEntryResp> result = new ArrayList<>();
             while (readEntries.hasMoreElements()) {
                 LedgerEntry ledgerEntry = readEntries.nextElement();
-                result.add(BkUtil.convert(ledgerEntry, codec));
+                result.add(BkUtil.convert(ledgerEntry, component, namespace));
             }
             return result;
         }
@@ -76,11 +79,14 @@ public class LedgerContentController {
 
     @GetMapping("/ledgers/{ledger}/last-entry")
     public GetLedgerEntryResp getLedgerLastEntry(@PathVariable long ledger,
-                                                 @RequestParam(value = "codec", required = false) String codec)
-            throws BKException, InterruptedException {
+                                                 @RequestParam(value = "decodeComponent", required = false)
+                                                 String component,
+                                                 @RequestParam(value = "decodeNamespace", required = false)
+                                                     String namespace)
+            throws Exception {
         try (LedgerHandle ledgerHandle = bookKeeper.openLedger(ledger, config.digestType, config.getPassword())) {
             LedgerEntry ledgerEntry = ledgerHandle.readLastEntry();
-            return BkUtil.convert(ledgerEntry, codec);
+            return BkUtil.convert(ledgerEntry, component, namespace);
         }
     }
 
