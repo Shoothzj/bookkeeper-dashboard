@@ -27,7 +27,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import BACKEND_HOST from '../Const';
 
-function LedgersPage() {
+function LedgerPage() {
   const { ledger } = useParams();
 
   const [content, setContent] = useState([]);
@@ -162,4 +162,4 @@ function LedgersPage() {
   );
 }
 
-export default LedgersPage;
+export default LedgerPage;

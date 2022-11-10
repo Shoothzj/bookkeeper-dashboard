@@ -11,6 +11,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { AppBar, Drawer } from '@mui/material';
 import HomePage from './HomePage';
+import LedgerPage from './bookkeeper/LedgerPage';
 
 const drawerWidth = 240;
 
@@ -57,6 +58,7 @@ function App() {
         <div>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/bookkeeper/ledgers/:ledger" element={<LedgerPage />} />
           </Routes>
         </div>
       </Box>
