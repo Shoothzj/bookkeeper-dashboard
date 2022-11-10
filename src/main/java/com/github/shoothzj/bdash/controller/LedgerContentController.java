@@ -21,6 +21,8 @@ package com.github.shoothzj.bdash.controller;
 
 import com.github.shoothzj.bdash.config.BookkeeperConfig;
 import com.github.shoothzj.bdash.module.GetLedgerEntryResp;
+import com.github.shoothzj.bdash.module.PutLedgerEntryReq;
+import com.github.shoothzj.bdash.service.LedgerHandleService;
 import com.github.shoothzj.bdash.util.BkUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.bookkeeper.client.BookKeeper;
@@ -30,10 +32,13 @@ import org.apache.bookkeeper.client.api.BKException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -47,9 +52,23 @@ public class LedgerContentController {
 
     private final BookKeeper bookKeeper;
 
-    public LedgerContentController(@Autowired BookkeeperConfig config, @Autowired BookKeeper bookKeeper) {
+    private final LedgerHandleService ledgerHandleService;
+
+    public LedgerContentController(@Autowired BookkeeperConfig config,
+                                   @Autowired BookKeeper bookKeeper,
+                                   @Autowired LedgerHandleService ledgerHandleService) {
         this.config = config;
         this.bookKeeper = bookKeeper;
+        this.ledgerHandleService = ledgerHandleService;
+    }
+
+    @PutMapping("/ledger/{ledgerId}/entries")
+    public void putLedgerEntry(@PathVariable long ledger, @RequestBody PutLedgerEntryReq req) throws Exception {
+        LedgerHandle ledgerHandle = ledgerHandleService.getLedgerHandle(ledger);
+        if (ledgerHandle == null) {
+            throw new IllegalStateException("This ledger is not owned by me.");
+        }
+        ledgerHandle.addEntry(req.getContent().getBytes(StandardCharsets.UTF_8));
     }
 
     @GetMapping("/ledgers/{ledger}/entries")

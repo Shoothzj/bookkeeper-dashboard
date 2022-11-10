@@ -20,6 +20,7 @@
 package com.github.shoothzj.bdash.controller;
 
 import com.github.shoothzj.bdash.config.BookkeeperConfig;
+import com.github.shoothzj.bdash.service.LedgerHandleService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.bookkeeper.client.BKException;
 import org.apache.bookkeeper.client.BookKeeper;
@@ -48,17 +49,23 @@ public class LedgerController {
 
     private final BookKeeper bookKeeper;
 
-    public LedgerController(@Autowired BookkeeperConfig config, @Autowired BookKeeper bookKeeper) {
+    private final LedgerHandleService ledgerHandleService;
+
+    public LedgerController(@Autowired BookkeeperConfig config,
+                            @Autowired BookKeeper bookKeeper,
+                            @Autowired LedgerHandleService ledgerHandleService) {
         this.config = config;
         this.bookKeeper = bookKeeper;
+        this.ledgerHandleService = ledgerHandleService;
     }
 
     @PutMapping("/ledgers")
     public long createLedger() throws BKException, InterruptedException {
-        try (LedgerHandle ledgerHandle = bookKeeper.createLedger(config.ensembleSize,
-                config.writeQuorumSize, config.ackQuorumSize, config.digestType, config.getPassword())) {
-            return ledgerHandle.getId();
-        }
+        LedgerHandle ledgerHandle = bookKeeper.createLedger(config.ensembleSize,
+                config.writeQuorumSize, config.ackQuorumSize, config.digestType, config.getPassword());
+        long ledgerId = ledgerHandle.getId();
+        ledgerHandleService.putLedgerHandle(ledgerId, ledgerHandle);
+        return ledgerId;
     }
 
     @GetMapping("/ledgers")
