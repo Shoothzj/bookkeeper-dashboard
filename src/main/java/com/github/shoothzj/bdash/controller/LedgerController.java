@@ -24,14 +24,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.bookkeeper.client.BKException;
 import org.apache.bookkeeper.client.BookKeeper;
 import org.apache.bookkeeper.client.LedgerHandle;
+import org.apache.bookkeeper.client.api.LedgersIterator;
+import org.apache.bookkeeper.client.api.ListLedgersResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -53,6 +59,18 @@ public class LedgerController {
                 config.writeQuorumSize, config.ackQuorumSize, config.digestType, config.getPassword())) {
             return ledgerHandle.getId();
         }
+    }
+
+    @GetMapping("/ledgers")
+    public List<Long> getLedgerList() throws Exception {
+        ListLedgersResult listLedgersResult = bookKeeper.newListLedgersOp().execute().get();
+        LedgersIterator iterator = listLedgersResult.iterator();
+        List<Long> result = new ArrayList<>();
+        while (iterator.hasNext()) {
+            long ledgerId = iterator.next();
+            result.add(ledgerId);
+        }
+        return result;
     }
 
     @DeleteMapping("/ledgers/{ledger}")
