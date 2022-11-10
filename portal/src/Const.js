@@ -17,15 +17,6 @@
  * under the License.
  */
 
-import * as React from 'react';
-import LedgerList from './bookkeeper/LedgersList';
+const BACKEND_HOST = window.location.origin;
 
-function HomePage() {
-  return (
-    <div>
-      <LedgerList />
-    </div>
-  );
-}
-
-export default HomePage;
+export default BACKEND_HOST;
