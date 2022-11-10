@@ -30,6 +30,8 @@ import BACKEND_HOST from '../Const';
 function LedgerPage() {
   const { ledger } = useParams();
 
+  const [lac, setLacContent] = useState([]);
+
   const [content, setContent] = useState([]);
 
   const [hexContent, setHexContent] = useState([]);
@@ -42,9 +44,17 @@ function LedgerPage() {
   };
 
   const fetchHexLedger = async () => {
-    const response = await fetch(`${BACKEND_HOST}/api/bookkeeper/ledgers/${ledger}?codec=hex`);
+    const response = await fetch(`${BACKEND_HOST}/api/bookkeeper/ledgers/
+    ${ledger}/last-entry?decodeComponent=Hex&decodeNamespace=ManagedManagedLedgerSubscription`);
     const data = await response.json();
     setHexContent(data.content);
+  };
+
+  const fetchLac = async () => {
+    const response = await fetch(`${BACKEND_HOST}/api/bookkeeper/ledgers/
+    ${ledger}/lac`);
+    const data = await response.json();
+    setLacContent(data);
   };
 
   const handleClickOpen = () => {
@@ -75,7 +85,7 @@ function LedgerPage() {
     setDecodeIsLoading(true);
 
     const response = await fetch(
-      `${BACKEND_HOST}/api/bookkeeper/${ledger}/entries?decodeComponent=${decodeComponent}&decodeNamespace=${decodeNamespace}`,
+      `${BACKEND_HOST}/api/bookkeeper/ledgers/${ledger}/last-entry?decodeComponent=${decodeComponent}&decodeNamespace=${decodeNamespace}`,
     );
     if (!response.ok) {
       setErr(err.message);
@@ -92,6 +102,7 @@ function LedgerPage() {
 
   useEffect(() => {
     fetchLedger();
+    fetchLac();
     fetchHexLedger();
   }, []);
 
@@ -100,6 +111,10 @@ function LedgerPage() {
       <h1>
         Ledger:
         {ledger}
+      </h1>
+      <h1>
+        LastEntry:
+        {lac}
       </h1>
       <Button variant="contained" onClick={handleClickOpen}>
         show hex
