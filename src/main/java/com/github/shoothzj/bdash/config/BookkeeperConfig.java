@@ -28,6 +28,9 @@ import java.nio.charset.StandardCharsets;
 @Configuration
 public class BookkeeperConfig {
 
+    @Value("${BOOKKEEPER_CONNECT_PREFIX:zk+hierarchical}")
+    public String connectPrefix;
+
     @Value("${BOOKKEEPER_ZOOKEEPER_SERVERS:localhost:2181}")
     public String servers;
 

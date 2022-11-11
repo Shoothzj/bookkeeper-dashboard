@@ -66,10 +66,6 @@ function LedgerList() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        ledger,
-        value,
-      }),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -100,37 +96,15 @@ function LedgerList() {
     <div>
       <h1>Ledgers</h1>
       <Button variant="contained" onClick={handleClickOpen}>
-        Put Ledger
+        Create Ledger
       </Button>
       <Button variant="contained" onClick={handleClickDelLedgers}>
         Delete Ledger
       </Button>
       <Dialog open={dialogOpen} onClose={handlePutLedger}>
-        <DialogTitle>Put Ledger</DialogTitle>
+        <DialogTitle>Create Ledger</DialogTitle>
         <DialogContent>
-          <DialogContentText>Please form the ledger and value</DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="put-ledger"
-            label="Ledger"
-            value={ledger}
-            onChange={handleLedgerChanged}
-            type="text"
-            fullWidth
-            variant="standard"
-          />
-          <TextField
-            autoFocus
-            margin="dense"
-            id="put-value"
-            label="Value"
-            value={value}
-            onChange={handleValueChanged}
-            type="text"
-            fullWidth
-            variant="standard"
-          />
+          <DialogContentText>Confirm create ledger?</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handlePutLedger}>Cancel</Button>
