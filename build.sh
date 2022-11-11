@@ -24,7 +24,7 @@ bash -x $DIR/portal/build.sh
 mvn -B clean package -Dmaven.test.skip=true
 mkdir -p $DIR/dist
 rm -rf $DIR/dist/*
-cp -r $DIR/portal/dist/bookkeeper-dashboard $DIR/dist/static
+cp -r $DIR/portal/build $DIR/dist/static
 cp $DIR/target/bookkeeper-dashboard-0.0.1-SNAPSHOT.jar $DIR/dist/bookkeeper-dashboard.jar
 cp -r $DIR/target/lib $DIR/dist/lib
 cp -r $DIR/target/conf $DIR/dist/conf
