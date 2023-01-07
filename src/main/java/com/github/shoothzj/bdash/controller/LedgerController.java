@@ -25,20 +25,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.bookkeeper.client.BKException;
 import org.apache.bookkeeper.client.BookKeeper;
 import org.apache.bookkeeper.client.LedgerHandle;
-import org.apache.bookkeeper.client.api.LedgersIterator;
-import org.apache.bookkeeper.client.api.ListLedgersResult;
+import org.apache.bookkeeper.meta.LedgerManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @RestController
@@ -69,20 +71,35 @@ public class LedgerController {
     }
 
     @GetMapping("/ledgers")
-    public List<Long> getLedgerList() throws Exception {
-        ListLedgersResult listLedgersResult = bookKeeper.newListLedgersOp().execute().get();
-        LedgersIterator iterator = listLedgersResult.iterator();
+    public List<Long> getLedgerList() throws InterruptedException {
         List<Long> result = new ArrayList<>();
-        while (iterator.hasNext()) {
-            long ledgerId = iterator.next();
-            result.add(ledgerId);
-        }
+        final CountDownLatch processDone = new CountDownLatch(1);
+        LedgerManager ledgerManager = bookKeeper.getLedgerManager();
+        ledgerManager.asyncProcessLedgers(
+                (ledgerId, cb) -> result.add(ledgerId),
+                (rc, s, obj) -> {
+                    if (rc != BKException.Code.OK) {
+                        log.error("exception thrown while get ledger list, error: ", BKException.create(rc));
+                    }
+                    processDone.countDown();
+                },
+                null, BKException.Code.OK, BKException.Code.ReadException);
+        processDone.await();
         return result;
     }
 
     @DeleteMapping("/ledgers/{ledger}")
     public ResponseEntity<Void> deleteLedger(@PathVariable long ledger) throws Exception {
         bookKeeper.deleteLedger(ledger);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/ledgers-delete")
+    public ResponseEntity<Void> deleteLedgerList(@RequestBody List<Long> ledgerIds)
+            throws BKException, InterruptedException {
+        for (long ledgerId : ledgerIds) {
+            bookKeeper.deleteLedger(ledgerId);
+        }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
